@@ -1,20 +1,65 @@
+import {Component} from 'react'
 import './index.css'
 
-const TodoItems = props => {
-  const {todo, deletetodo} = props
-  const {id, title} = todo
-  const deletetodoitem = () => {
-    deletetodo(id)
+class TodoItem extends Component {
+  state = {
+    editing: false,
+    updatedTitle: '',
   }
 
-  return (
-    <li>
-      <p>{title}</p>
-      <button type="button" onClick={deletetodoitem}>
-        Delete
-      </button>
-    </li>
-  )
+  handleEdit = () => {
+    const {todoDetails} = this.props
+    this.setState({editing: true, updatedTitle: todoDetails.title})
+  }
+
+  handleSave = () => {
+    const {todoDetails, updateTodoTitle} = this.props
+    const {updatedTitle} = this.state
+    updateTodoTitle(todoDetails.id, updatedTitle)
+    this.setState({editing: false})
+  }
+
+  handleChange = e => {
+    this.setState({updatedTitle: e.target.value})
+  }
+
+  render() {
+    const {todoDetails, deleteTodo, toggleComplete} = this.props
+    const {editing, updatedTitle} = this.state
+    const {id, title, completed} = todoDetails
+
+    return (
+      <li className={completed ? 'todo-item completed' : 'todo-item'}>
+        {editing ? (
+          <>
+            <input
+              type="text"
+              value={updatedTitle}
+              onChange={this.handleChange}
+            />
+            <button onClick={this.handleSave} type="button" aria-label="Save">
+              Save
+            </button>
+          </>
+        ) : (
+          <>
+            <input
+              type="checkbox"
+              checked={completed}
+              onChange={() => toggleComplete(id)}
+            />
+            <p className="title">{title}</p>
+            <button onClick={this.handleEdit} type="button" aria-label="Edit">
+              Edit
+            </button>
+            <button onClick={() => deleteTodo(id)} type="button">
+              Delete
+            </button>
+          </>
+        )}
+      </li>
+    )
+  }
 }
 
-export default TodoItems
+export default TodoItem

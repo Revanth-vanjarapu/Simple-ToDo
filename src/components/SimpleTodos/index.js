@@ -1,64 +1,106 @@
 import {Component} from 'react'
-import TodoItems from '../TodoItem'
+import TodoItem from '../TodoItem'
 import './index.css'
 
-const initialTodosList = [
-  {
-    id: 1,
-    title: 'Book the ticket for today evening',
-  },
-  {
-    id: 2,
-    title: 'Rent the movie for tomorrow movie night',
-  },
-  {
-    id: 3,
-    title: 'Confirm the slot for the yoga session tomorrow morning',
-  },
-  {
-    id: 4,
-    title: 'Drop the parcel at Bloomingdale',
-  },
-  {
-    id: 5,
-    title: 'Order fruits on Big Basket',
-  },
-  {
-    id: 6,
-    title: 'Fix the production issue',
-  },
-  {
-    id: 7,
-    title: 'Confirm my slot for Saturday Night',
-  },
-  {
-    id: 8,
-    title: 'Get essentials for Sunday car wash',
-  },
-]
+class SimpleTodos extends Component {
+  state = {
+    todosList: [
+      {id: 1, title: 'Book the ticket for today evening', completed: false},
+      {
+        id: 2,
+        title: 'Rent the movie for tomorrow movie night',
+        completed: false,
+      },
+      {
+        id: 3,
+        title: 'Confirm the slot for the yoga session tomorrow morning',
+        completed: false,
+      },
+      {id: 4, title: 'Drop the parcel at Bloomingdale', completed: false},
+      {id: 5, title: 'Order fruits on Big Basket', completed: false},
+      {id: 6, title: 'Fix the production issue', completed: false},
+      {id: 7, title: 'Confirm my slot for Saturday Night', completed: false},
+      {id: 8, title: 'Get essentials for Sunday car wash', completed: false},
+    ],
+    newTodoTitle: '',
+  }
 
-export default class SimpleTodos extends Component {
-  state = {todoList: initialTodosList}
+  handleAddTodo = () => {
+    const {newTodoTitle} = this.state
+    const rawInput = newTodoTitle.trim()
+    if (rawInput === '') return
 
-  deletetodo = id => {
-    const {todoList} = this.state
-    const filterData = todoList.filter(eachItem => eachItem.id !== id)
-    this.setState({todoList: filterData})
+    const parts = rawInput.split(' ')
+    const maybeCount = parseInt(parts[parts.length - 1])
+    const isMultiple = !Number.isNaN(maybeCount)
+    const count = isMultiple ? maybeCount : 1
+    const title = isMultiple ? parts.slice(0, -1).join(' ') : rawInput
+
+    const newTodos = Array.from({length: count}, (_, i) => ({
+      id: Date.now() + i,
+      title,
+      completed: false,
+    }))
+
+    this.setState(prevState => ({
+      todosList: [...prevState.todosList, ...newTodos],
+      newTodoTitle: '',
+    }))
+  }
+
+  handleChange = e => {
+    this.setState({newTodoTitle: e.target.value})
+  }
+
+  deleteTodo = id => {
+    this.setState(prevState => ({
+      todosList: prevState.todosList.filter(todo => todo.id !== id),
+    }))
+  }
+
+  toggleComplete = id => {
+    this.setState(prevState => ({
+      todosList: prevState.todosList.map(todo =>
+        todo.id === id ? {...todo, completed: !todo.completed} : todo,
+      ),
+    }))
+  }
+
+  updateTodoTitle = (id, newTitle) => {
+    this.setState(prevState => ({
+      todosList: prevState.todosList.map(todo =>
+        todo.id === id ? {...todo, title: newTitle} : todo,
+      ),
+    }))
   }
 
   render() {
-    const {todoList} = this.state
+    const {todosList, newTodoTitle} = this.state
 
     return (
       <div className="container">
-        <h1>Simple Todos</h1>
-        <div className="list-conatainer">
-          <ul className="list">
-            {todoList.map(eachItem => (
-              <TodoItems
-                key={eachItem.id}
-                todo={eachItem}
-                deletetodo={this.deletetodo}
+        <div className="inner-container">
+          <h1 className="heading">Simple Todos</h1>
+          <div className="add-todo">
+            <input
+              type="text"
+              name="newTodoTitle"
+              value={newTodoTitle}
+              onChange={this.handleChange}
+              placeholder="Enter todo title (e.g. Buy Milk 3)"
+            />
+            <button onClick={this.handleAddTodo} type="button">
+              Add
+            </button>
+          </div>
+          <ul className="todos-list">
+            {todosList.map(todo => (
+              <TodoItem
+                key={todo.id}
+                todoDetails={todo}
+                deleteTodo={this.deleteTodo}
+                toggleComplete={this.toggleComplete}
+                updateTodoTitle={this.updateTodoTitle}
               />
             ))}
           </ul>
@@ -67,3 +109,5 @@ export default class SimpleTodos extends Component {
     )
   }
 }
+
+export default SimpleTodos
